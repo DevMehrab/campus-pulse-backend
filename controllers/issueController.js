@@ -1,76 +1,49 @@
-import {
+const {
   createIssueService,
   deleteIssueService,
   getIssueByIdService,
   getIssueByUserService,
   getIssuesService,
   voteIssueService,
-} from "../services/issueService.js";
+} = require("../services/issueService.js");
+const asyncHandler = require("../utils/asyncHandler.js");
 
-export const createIssue = async (req, res) => {
-  try {
-    const issue = await createIssueService(req.body, req.user.id);
-    res.status(201).json(issue);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Failed to create issue", error: error.message });
-  }
-};
+const createIssue = asyncHandler(async (req, res) => {
+  const issue = await createIssueService(req.body, req.user.id, req.file);
+  res.status(201).json(issue);
+});
 
-export const getIssues = async (req, res) => {
-  try {
-    const issues = await getIssuesService(req.query);
-    res.json(issues);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch issues", error: error.message });
-  }
-};
+const getIssues = asyncHandler(async (req, res) => {
+  const issues = await getIssuesService(req.query, req.user.id);
+  res.json(issues);
+});
 
-export const getIssueById = async (req, res) => {
-  try {
-    const issue = await getIssueByIdService(req.params.issueId);
+const getIssueById = asyncHandler(async (req, res) => {
+  const issue = await getIssueByIdService(req.params.issueId);
+  res.json(issue);
+});
 
-    res.json(issue);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch issue", error: error.message });
-  }
-};
+const getIssueByUser = asyncHandler(async (req, res) => {
+  const issue = await getIssueByUserService(req.params.userId);
+  res.json(issue);
+});
 
-export const getIssueByUser = async (req, res) => {
-  try {
-    const issue = await getIssueByUserService(req.params.id);
+const voteIssue = asyncHandler(async (req, res) => {
+  const issue = await voteIssueService(req.params.issueId, req.user.id);
+  res.json({ message: "Vote added", votes: issue.votes });
+});
 
-    res.json(issue);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch issue", error: error.message });
-  }
-};
+const deleteIssue = asyncHandler(async (req, res) => {
+  await deleteIssueService(req.params.issueId, req.user);
+  res.json({ message: "Issue deleted" });
+});
 
-export const voteIssue = async (req, res) => {
-  try {
-    const issue = await voteIssueService(req.params.issueId, req.user.id);
-
-    res.json({ message: "Vote added", votes: issue.votes });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to vote", error: error.message });
-  }
-};
-
-export const deleteIssue = async (req, res) => {
-  try {
-    await deleteIssueService(req.params.issueId, req.user);
-
-    res.json({ message: "Issue deleted" });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Failed to delete issue", error: error.message });
-  }
+module.exports = {
+  createIssue,
+  getIssues,
+  getIssueById,
+  getIssueById,
+  getIssueByUser,
+  voteIssue,
+  deleteIssue,
 };

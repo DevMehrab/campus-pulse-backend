@@ -20,7 +20,7 @@ async function updateUserProfileService(userId, userData) {
 async function getUserService(userId) {
   const user = await User.findById(userId).select("-password");
   if (!user) throw new Error("User not found");
-  res.json(user);
+  return user;
 }
 
 async function deleteUserService(userId) {

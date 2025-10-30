@@ -1,16 +1,17 @@
-import express from "express";
-import {
+const { Router } = require("express");
+
+const {
   getDashboardStats,
   updateIssueByAdmin,
   deleteIssueByAdmin,
   deleteUserByAdmin,
-} from "../controllers/adminController.js";
-import {
+} = require("../controllers/adminController.js");
+const {
   protectedRoute,
   authMiddleware,
-} from "../middlewares/authMiddleware.js";
+} = require("../middlewares/authMiddleware.js");
 
-const router = express.Router();
+const router = Router();
 
 router.get(
   "/stats",
@@ -37,4 +38,4 @@ router.delete(
   deleteUserByAdmin
 );
 
-export default router;
+module.exports = router;

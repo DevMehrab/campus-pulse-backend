@@ -3,7 +3,6 @@ const bcrypt = require("bcryptjs");
 
 async function registerUserService(requestBody) {
   const { username, email, password } = requestBody;
-
   const existingUser = await User.findOne({ email });
   if (existingUser) throw new Error("User already exists");
 

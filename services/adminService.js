@@ -1,5 +1,5 @@
-import User from "../models/User.js";
-import Issue from "../models/Issue.js";
+const User = require("../models/User.js");
+const Issue = require("../models/Issue.js");
 
 async function getDashboardStatsService() {
   const totalUsers = await User.countDocuments();

@@ -1,16 +1,15 @@
 const Comment = require("../models/Comment");
 
 async function createCommentService(requestBody) {
-  const { text, postId, userId } = requestBody;
-  const comment = await Comment.create({ text, post: postId, user: userId });
+  const { text, issueId, userId } = requestBody;
+  const comment = await Comment.create({ text, issue: issueId, user: userId });
   return comment;
 }
 
-async function getCommentsByPostService(postId) {
-  const comments = await Comment.find({ post: postId }).populate(
-    "user",
-    "name"
-  );
+async function getCommentsByIssueService(issueId) {
+  const comments = await Comment.find({ issue: issueId })
+    .sort({ createdAt: -1 })
+    .populate("user", "username role");
   return comments;
 }
 
@@ -37,7 +36,7 @@ async function deleteCommentService(commentId, userId) {
 }
 module.exports = {
   createCommentService,
-  getCommentsByPostService,
+  getCommentsByIssueService,
   updateCommentService,
   deleteCommentService,
 };

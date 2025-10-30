@@ -1,56 +1,39 @@
-import User from "../models/User.js";
-import {
+const User = require("../models/User.js");
+const {
   deleteUserService,
   getUserService,
   updateUserProfileService,
-} from "../services/userService.js";
-import generateToken from "../utils/generateToken.js";
-import bcrypt from "bcryptjs";
+} = require("../services/userService.js");
+const asyncHandler = require("../utils/asyncHandler.js");
+const generateToken = require("../utils/generateToken.js");
 
-export const updateUserProfile = async (req, res) => {
-  try {
-    const result = await updateUserProfileService(req.user.id, req.body);
-    res.json({
-      result,
-      token: generateToken(updatedUser._id),
-    });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Failed to update profile", error: error.message });
-  }
-};
+const updateUserProfile = asyncHandler(async (req, res) => {
+  const result = await updateUserProfileService(req.user.id, req.body);
+  res.json({
+    result,
+    token: generateToken(updatedUser._id),
+  });
+});
 
-export const getAllUsers = async (req, res) => {
-  try {
-    const users = await User.find().select("-password");
-    res.json(users);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch users", error: error.message });
-  }
-};
+const getAllUsers = asyncHandler(async (req, res) => {
+  const users = await User.find().select("-password");
+  res.json(users);
+});
 
-export const getUser = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const user = await getUserService(userId);
-    res.json(user);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch users", error: error.message });
-  }
-};
+const getUser = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const user = await getUserService(userId);
+  res.json(user);
+});
 
-export const deleteUser = async (req, res) => {
-  try {
-    await deleteUserService(req.params.userId);
-    res.json({ message: "User deleted" });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Failed to delete user", error: error.message });
-  }
+const deleteUser = asyncHandler(async (req, res) => {
+  await deleteUserService(req.params.userId);
+  res.json({ message: "User deleted" });
+});
+
+module.exports = {
+  updateUserProfile,
+  getAllUsers,
+  getUser,
+  deleteUser,
 };

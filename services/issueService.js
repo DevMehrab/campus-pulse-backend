@@ -1,7 +1,8 @@
 const Issue = require("../models/Issue");
+const Vote = require("../models/Vote");
 
-async function createIssueService(requestBody, userId) {
-  const { title, description, category, images, anonymous } = requestBody;
+async function createIssueService(requestBody, userId, file) {
+  const { title, description, category, anonymous } = requestBody;
 
   if (!title || !description || !category) {
     throw new Error("Title, description, and category are required");
@@ -11,7 +12,7 @@ async function createIssueService(requestBody, userId) {
     title,
     description,
     category,
-    images,
+    image: file ? file.path : null,
     createdBy: userId,
     anonymous: anonymous || false,
   });
@@ -19,23 +20,30 @@ async function createIssueService(requestBody, userId) {
   return issue;
 }
 
-async function getIssuesService(requestQuery) {
+async function getIssuesService(requestQuery, userId) {
   const { category, status, sort } = requestQuery;
 
-  let query = {};
+  const query = {};
   if (category) query.category = category;
   if (status) query.status = status;
 
-  let issues = await Issue.find(query)
-    .populate("createdBy", "name email")
-    .sort(sort === "votes" ? { votes: -1 } : { createdAt: -1 });
+  const issues = await Issue.find(query)
+    .populate("createdBy", "username email")
+    .sort(sort === "votes" ? { votes: -1 } : { createdAt: -1 })
+    .lean();
 
-  return issues;
+  const votedIssues = await Vote.find({ userId }).select("issueId");
+  const votedIssueIds = new Set(votedIssues.map((v) => v.issueId.toString()));
+  const issuesWithVoteStatus = issues.map((issue) => ({
+    ...issue,
+    hasVoted: votedIssueIds.has(issue._id.toString()),
+  }));
+  return issuesWithVoteStatus;
 }
 
 async function getIssueByIdService(issueId) {
   const issue = await Issue.findById(issueId)
-    .populate("createdBy", "name email")
+    .populate("createdBy", "username email")
     .populate("comments");
 
   if (!issue) throw new Error("Issue not found");
@@ -43,12 +51,20 @@ async function getIssueByIdService(issueId) {
 }
 
 async function getIssueByUserService(userId) {
-  const issue = await Issue.find({ createdBy: userId })
-    .populate("createdBy", "name email")
-    .populate("comments");
+  const issues = await Issue.find({ createdBy: userId })
+    .populate("createdBy", "username email")
+    .populate("comments")
+    .lean();
 
-  if (!issue) throw new Error("Issue not found");
-  return issue;
+  if (!issues) throw new Error("Issue not found");
+
+  const votedIssues = await Vote.find({ userId }).select("issueId");
+  const votedIssueIds = new Set(votedIssues.map((v) => v.issueId.toString()));
+  const issuesWithVoteStatus = issues.map((issue) => ({
+    ...issue,
+    hasVoted: votedIssueIds.has(issue._id.toString()),
+  }));
+  return issuesWithVoteStatus;
 }
 async function voteIssueService(issueId, userId) {
   const existingVote = await Vote.findOne({
@@ -60,7 +76,12 @@ async function voteIssueService(issueId, userId) {
       issueId,
       userId,
     });
-    throw new Error("Vote removed");
+    const issue = await Issue.findByIdAndUpdate(
+      issueId,
+      { $inc: { votes: -1 } },
+      { new: true }
+    );
+    return issue;
   }
 
   await Vote.create({ issueId, userId });

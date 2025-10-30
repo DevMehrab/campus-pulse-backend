@@ -6,9 +6,16 @@ const issueSchema = new mongoose.Schema(
     description: String,
     category: {
       type: String,
-      enum: ["facility", "academic", "admin", "it", "cafeteria", "other"],
+      enum: [
+        "maintenance",
+        "facilities",
+        "academic",
+        "security",
+        "security",
+        "other",
+      ],
     },
-    images: [String],
+    image: { type: String },
     status: {
       type: String,
       enum: ["pending", "in-progress", "resolved", "rejected"],
@@ -17,6 +24,12 @@ const issueSchema = new mongoose.Schema(
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     anonymous: { type: Boolean, default: false },
     votes: Number,
+    comments: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Comment",
+      },
+    ],
     createdAt: Date,
     updatedAt: Date,
   },

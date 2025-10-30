@@ -1,8 +1,9 @@
-import { body } from "express-validator";
+const { body } = require("express-validator");
 
-export const registerValidator = [
+const registerValidator = [
   body("username")
     .trim()
+    .matches(/^[a-zA-Z0-9_]+$/)
     .notEmpty()
     .isLength({ min: 3 })
     .withMessage("Username must be at least 3 characters"),
@@ -13,3 +14,5 @@ export const registerValidator = [
     .isLength({ min: 6 })
     .withMessage("Password must be at least 6 characters"),
 ];
+
+module.exports = registerValidator;
