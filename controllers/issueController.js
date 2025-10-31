@@ -14,7 +14,7 @@ const createIssue = asyncHandler(async (req, res) => {
 });
 
 const getIssues = asyncHandler(async (req, res) => {
-  const issues = await getIssuesService(req.query, req.user.id);
+  const issues = await getIssuesService(req.query, req?.user?.id);
   res.json(issues);
 });
 

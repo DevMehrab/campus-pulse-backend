@@ -22,7 +22,7 @@ async function createIssueService(requestBody, userId, file) {
   return issue;
 }
 
-async function getIssuesService(requestQuery, userId) {
+async function getIssuesService(requestQuery, userId = null) {
   const { category, status, sort } = requestQuery;
 
   const query = {};
@@ -33,6 +33,7 @@ async function getIssuesService(requestQuery, userId) {
     .populate("createdBy", "username email")
     .sort(sort === "votes" ? { votes: -1 } : { createdAt: -1 })
     .lean();
+  if (!userId) return issues.map((i) => ({ ...i, hasVoted: false }));
 
   const votedIssues = await Vote.find({ userId }).select("issueId");
   const votedIssueIds = new Set(votedIssues.map((v) => v.issueId.toString()));
