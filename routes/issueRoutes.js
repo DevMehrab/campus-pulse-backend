@@ -32,8 +32,8 @@ const storage = new CloudinaryStorage({
 const upload = multer({ storage });
 
 route.get("/", getIssues);
-route.get("/issue/:issueId", authMiddleware, getIssueById);
-route.get("/user/:userId", authMiddleware, getIssueByUser);
+route.get("/issue/:issueId", getIssueById);
+route.get("/user/:userId", getIssueByUser);
 route.post("/create", authMiddleware, upload.single("file"), createIssue);
 route.put("/:issueId/vote", authMiddleware, voteIssue);
 route.delete("/:issueId", authMiddleware, deleteIssue);
