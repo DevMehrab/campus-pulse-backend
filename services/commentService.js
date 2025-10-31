@@ -10,6 +10,11 @@ async function getCommentsByIssueService(issueId) {
   const comments = await Comment.find({ issue: issueId })
     .sort({ createdAt: -1 })
     .populate("user", "username role");
+  if (!comments) {
+    const error = new Error("Comments not found");
+    error.statusCode = 404;
+    throw error;
+  }
   return comments;
 }
 
@@ -17,7 +22,12 @@ async function updateCommentService(commentId, text, userId) {
   const comment = await Comment.findById(commentId);
   if (!comment) throw new Error("Comment not found");
 
-  if (comment.userId.toString() !== userId) throw new Error("Forbidden");
+  if (comment.userId.toString() !== userId) {
+    const error = new Error("Forbidden");
+    error.statusCode = 403;
+    throw error;
+  }
+
   const updatedComment = await Comment.findByIdAndUpdate(
     commentId,
     { text },
@@ -28,9 +38,15 @@ async function updateCommentService(commentId, text, userId) {
 
 async function deleteCommentService(commentId, userId) {
   const comment = await Comment.findById(commentId);
-  if (!comment) return res.status(404).json({ error: "Comment not found" });
+  if (!comment) {
+    const error = new Error("Comment not found");
+    error.statusCode = 404;
+    throw error;
+  }
   if (comment.userId.toString() !== userId) {
-    return res.status(403).json({ error: "Forbidden" });
+    const error = new Error("Forbidden");
+    error.statusCode = 403;
+    throw error;
   }
   const deletedComment = await Comment.findByIdAndDelete(commentId);
 }

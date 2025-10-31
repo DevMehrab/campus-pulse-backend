@@ -5,7 +5,9 @@ async function createIssueService(requestBody, userId, file) {
   const { title, description, category, anonymous } = requestBody;
 
   if (!title || !description || !category) {
-    throw new Error("Title, description, and category are required");
+    const error = new Error("Title, description, and category are required");
+    error.statusCode = 400;
+    throw error;
   }
 
   const issue = await Issue.create({
@@ -46,7 +48,11 @@ async function getIssueByIdService(issueId) {
     .populate("createdBy", "username email")
     .populate("comments");
 
-  if (!issue) throw new Error("Issue not found");
+  if (!issue) {
+    const error = new Error("Issue not found");
+    error.statusCode = 404;
+    throw error;
+  }
   return issue;
 }
 
@@ -97,10 +103,17 @@ async function voteIssueService(issueId, userId) {
 async function deleteIssueService(issueId, user) {
   const issue = await Issue.findById(issueId);
 
-  if (!issue) throw new Error("Issue not found");
+  if (!issue) {
+    const error = new Error("Issue not found");
+    error.statusCode = 404;
+    throw error;
+  }
 
-  if (issue.createdBy.toString() !== user.issueId && user.role !== "admin")
-    throw new Error("Unauthorized to delete this issue");
+  if (issue.createdBy.toString() !== user.issueId && user.role !== "admin") {
+    const error = new Error("Unauthorized to delete this issue");
+    error.statusCode = 403;
+    throw error;
+  }
 
   await issue.deleteOne();
 }
